@@ -14,3 +14,8 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Use the supplied cream, coral, sunflower, turquoise, orange and lavender palette for a shared monitor-based bingo drawing site.
 - Deploy to Cloudflare and create a GitHub repository with the implementation committed.
 - Do not reference or reuse any existing project designs or illustrations. The user explicitly rejected them. Use only the palette of the image attached in this conversation. Create a fresh, centered monitor display.
+
+## Latest user feedback
+- The user rejected the previous minimalist centered circle design as unattractive. Redesign the hierarchy and typography rather than retaining that composition.
+- Keep fullscreen support. Remove all sound controls and audio functionality.
+- Show a permanent panel beside the current draw with all 75 numbers and clearly highlight every previously drawn number; do not hide the full history in a modal or limit it to recent numbers.
