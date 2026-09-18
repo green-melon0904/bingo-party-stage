@@ -51,7 +51,6 @@ export function App() {
         <div className="stage-top"><p>{spinning ? 'つぎの番号は…' : latest ? 'ただいまの番号' : 'さあ、はじめよう！'}</p><span>残り <b>{75-called.length}</b> 個</span></div>
         <div className={`result ${latest && !spinning ? 'revealed' : ''}`} key={spinning ? 'spin' : latest || 'ready'} aria-hidden="true"><span className="letter" style={{background:shown ? colorFor(shown) : palette[2]}}>{shown ? letterFor(shown) : 'GO'}</span><strong>{shown ? String(shown).padStart(2,'0') : '？'}</strong></div>
         <p className="sr-only" role="status">{!spinning && latest ? `ただいまの番号は ${letterFor(latest)}、${latest} です。` : ''}</p>
-        <p className="message">{spinning ? 'ドキドキ、もうすぐ出るよ！' : called.length === 75 ? 'すべての番号が出ました！' : latest ? '' : 'カードを用意して、準備はいい？'}</p>
         <div className="draw-controls"><button className="draw-button" onClick={draw} disabled={spinning || called.length === 75}>{spinning ? '抽選中…' : called.length === 75 ? '抽選が終了しました' : latest ? '次の番号を引く' : 'ビンゴをはじめる'} <span aria-hidden="true">→</span></button><span className="keyboard-hint"><kbd>SPACE</kbd> キーでも抽選できます</span></div>
         <section className={`winner-counter ${winners.count === winners.limit ? 'at-limit' : ''}`} aria-labelledby="winner-title">
           <div className="winner-label"><h2 id="winner-title">BINGOした人数</h2><span>{winners.count === winners.limit ? <button className="end-again" onClick={() => endDialog.current.showModal()}>上限に到達 · 終了する</button> : 'ビンゴが出たら＋を押す'}</span></div>
