@@ -10,3 +10,11 @@ export function nextNumber(called, random = Math.random) {
   const remaining = numbers.filter(n => !called.includes(n));
   return remaining.length ? remaining[Math.floor(random() * remaining.length)] : null;
 }
+
+export function loadWinners(storage) {
+  const fallback = { count: 0, limit: 10 };
+  try {
+    const value = JSON.parse(storage.getItem('bingo-winners-v1'));
+    return value && Number.isInteger(value.limit) && value.limit >= 1 && value.limit <= 9999 && Number.isInteger(value.count) && value.count >= 0 && value.count <= value.limit ? { count: value.count, limit: value.limit } : fallback;
+  } catch { return fallback; }
+}
