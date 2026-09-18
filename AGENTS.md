@@ -20,3 +20,4 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Keep fullscreen support. Remove all sound controls and audio functionality.
 - Show a permanent panel beside the current draw with all 75 numbers and clearly highlight every previously drawn number; do not hide the full history in a modal or limit it to recent numbers.
 - Add a host-operated BINGO winner counter showing count / configured limit. Support increment/decrement, persist both values, and reset the winner count (but preserve the limit) when starting a new game.
+- Remove the header tagline and the drawn-number message “みんな、カードをチェック！”. At the winner limit, ask whether to continue or end; ending displays a dedicated end screen, persists across reload, and blocks further draws until a confirmed new game.
