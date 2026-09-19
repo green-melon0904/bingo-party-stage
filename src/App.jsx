@@ -32,48 +32,56 @@ export function App() {
     if (ended || endDialog.current?.open || lock.current || called.length === 75 || resetDialog.current?.open) return;
     lock.current = true;
     const selected = nextNumber(called);
-    setSpinning(true); setPreview(nextNumber(called));
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const duration = reduced ? 150 : 1900;
+    setSpinning(true); setPreview(nextNumber(called));
+    playDrawSound(duration);
     timers.current = [];
     if (!reduced) for (let i = 1; i <= 15; i++) timers.current.push(setTimeout(() => { setPreview(nextNumber(called)); }, i * 100));
-    timers.current.push(setTimeout(() => { setCalled(previous => [...previous, selected]); setSpinning(false); lock.current = false; }, duration));
+    timers.current.push(setTimeout(() => { playRevealSound(); setCalled(previous => [...previous, selected]); setSpinning(false); lock.current = false; }, duration));
   }
   useEffect(() => { const key = e => { if (e.code === 'Space' && !e.repeat && !['BUTTON','INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) { e.preventDefault(); draw(); } }; window.addEventListener('keydown', key); return () => window.removeEventListener('keydown', key); });
   async function toggleFull() { try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); } catch { setWarning('全画面表示に対応していません。ブラウザの全画面機能をご利用ください。'); } }
-  function playBingoSound() {
+  function getAudioContext() {
     try {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) return;
+      if (!AudioContextClass) return null;
       const context = audioContext.current ??= new AudioContextClass();
       void context.resume();
-      const start = context.currentTime;
-      [
-        [523.25, 0, 0.14],
-        [659.25, 0.11, 0.14],
-        [783.99, 0.22, 0.16],
-        [1046.5, 0.35, 0.42],
-      ].forEach(([frequency, offset, duration]) => {
-        const oscillator = context.createOscillator();
-        const gain = context.createGain();
-        oscillator.type = 'triangle';
-        oscillator.frequency.setValueAtTime(frequency, start + offset);
-        gain.gain.setValueAtTime(0.0001, start + offset);
-        gain.gain.exponentialRampToValueAtTime(0.13, start + offset + 0.015);
-        gain.gain.exponentialRampToValueAtTime(0.0001, start + offset + duration);
-        oscillator.connect(gain);
-        gain.connect(context.destination);
-        oscillator.start(start + offset);
-        oscillator.stop(start + offset + duration + 0.02);
-      });
+      return context;
     } catch {
-      // The winner count should still work when browser audio is unavailable.
+      return null;
     }
   }
-  function addWinner() {
-    if (winners.count >= winners.limit) return;
-    playBingoSound();
-    setWinners(previous => ({ ...previous, count: Math.min(previous.limit, previous.count + 1) }));
+  function playTone(context, frequency, offset, duration, volume, type = 'triangle') {
+    const start = context.currentTime + offset;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.02);
+  }
+  function playDrawSound(duration) {
+    const context = getAudioContext();
+    if (!context) return;
+    const count = duration < 500 ? 2 : 15;
+    for (let i = 0; i < count; i++) {
+      const progress = i / Math.max(1, count - 1);
+      playTone(context, 180 + (i % 4) * 48 + progress * 170, i * (duration / count) / 1000, 0.055, 0.045, 'square');
+    }
+  }
+  function playRevealSound() {
+    const context = getAudioContext();
+    if (!context) return;
+    playTone(context, 523.25, 0, 0.2, 0.11);
+    playTone(context, 659.25, 0.07, 0.24, 0.1);
+    playTone(context, 783.99, 0.14, 0.38, 0.12);
   }
   return <main className="app">
     <header className="toolbar">
@@ -88,7 +96,7 @@ export function App() {
         <div className="draw-controls"><button className="draw-button" onClick={draw} disabled={spinning || called.length === 75}>{spinning ? '抽選中…' : called.length === 75 ? '抽選が終了しました' : latest ? '次の番号を引く' : 'ビンゴをはじめる'} <span aria-hidden="true">→</span></button><span className="keyboard-hint"><kbd>SPACE</kbd> キーでも抽選できます</span></div>
         <section className={`winner-counter ${winners.count === winners.limit ? 'at-limit' : ''}`} aria-labelledby="winner-title">
           <div className="winner-label"><h2 id="winner-title">BINGOした人数</h2><span>{winners.count === winners.limit ? <button className="end-again" onClick={() => endDialog.current.showModal()}>上限に到達 · 終了する</button> : 'ビンゴが出たら＋を押す'}</span></div>
-          <div className="winner-stepper"><button type="button" aria-label="BINGO人数を1人減らす" disabled={winners.count === 0} onClick={() => setWinners(previous => ({ ...previous, count: Math.max(0, previous.count - 1) }))}>−</button><output aria-live="polite" aria-atomic="true"><strong>{winners.count}</strong><span> / {winners.limit}</span><small> 人</small></output><button type="button" className="winner-plus" aria-label="BINGO人数を1人増やす" disabled={winners.count >= winners.limit} onClick={addWinner}>＋</button></div>
+          <div className="winner-stepper"><button type="button" aria-label="BINGO人数を1人減らす" disabled={winners.count === 0} onClick={() => setWinners(previous => ({ ...previous, count: Math.max(0, previous.count - 1) }))}>−</button><output aria-live="polite" aria-atomic="true"><strong>{winners.count}</strong><span> / {winners.limit}</span><small> 人</small></output><button type="button" className="winner-plus" aria-label="BINGO人数を1人増やす" disabled={winners.count >= winners.limit} onClick={() => setWinners(previous => ({ ...previous, count: Math.min(previous.limit, previous.count + 1) }))}>＋</button></div>
           <label className="winner-limit">上限 <input type="number" min={Math.max(1, winners.count)} max="9999" step="1" aria-label="BINGO人数の上限" aria-describedby={limitError ? 'limit-error' : undefined} value={limitDraft ?? winners.limit} onChange={event => setLimitDraft(event.target.value)} onBlur={saveLimit} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); } }} /> 人</label>
           {limitError && <p className="limit-error" id="limit-error" role="alert">{limitError}</p>}
         </section>

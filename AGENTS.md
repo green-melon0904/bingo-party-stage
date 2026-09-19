@@ -17,9 +17,9 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 
 ## Latest user feedback
 - The user rejected the previous minimalist centered circle design as unattractive. Redesign the hierarchy and typography rather than retaining that composition.
-- Keep fullscreen support. Remove all sound controls and audio functionality.
+- Keep fullscreen support. Do not add sound controls.
 - Show a permanent panel beside the current draw with all 75 numbers and clearly highlight every previously drawn number; do not hide the full history in a modal or limit it to recent numbers.
 - Add a host-operated BINGO winner counter showing count / configured limit. Support increment/decrement, persist both values, and reset the winner count (but preserve the limit) when starting a new game.
 - Remove the header tagline and the drawn-number message “みんな、カードをチェック！”. At the winner limit, ask whether to continue or end; ending displays a dedicated end screen, persists across reload, and blocks further draws until a confirmed new game.
 - Remove the in-draw message “ドキドキ、もうすぐ出るよ！”; the drawing state should communicate through the number animation and disabled draw button only.
-- Play a short celebratory BINGO sound effect only when the host increments the winner counter; keep draws silent and do not add a sound control.
+- Play a rolling sound effect while drawing a number and a bright confirmation sound when the number is revealed. Keep the winner counter silent.
