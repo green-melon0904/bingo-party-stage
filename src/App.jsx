@@ -19,7 +19,7 @@ export function App() {
   useEffect(() => { try { localStorage.setItem('bingo-winners-v1', JSON.stringify(winners)); } catch { setWarning('人数を保存できません。この画面を開いたままご利用ください。'); } }, [winners]);
   useEffect(() => { try { localStorage.setItem('bingo-ended-v1', String(ended)); } catch { setWarning('終了状態を保存できません。'); } if (ended) endHeading.current?.focus(); }, [ended]);
   useEffect(() => { if (winners.count < winners.limit) { offeredLimit.current = null; return; } if (!ended && !spinning && offeredLimit.current !== winners.limit && !endDialog.current?.open) { offeredLimit.current = winners.limit; endDialog.current?.showModal(); } }, [winners.count, winners.limit, ended, spinning]);
-  function finishGame() { timers.current.forEach(clearTimeout); lock.current = false; setSpinning(false); endDialog.current.close(); setEnded(true); }
+  function finishGame() { timers.current.forEach(clearTimeout); lock.current = false; setSpinning(false); endDialog.current.close(); playEndSound(); setEnded(true); }
   function saveLimit() {
     if (limitDraft === null) return;
     const limit = Number(limitDraft);
@@ -82,6 +82,18 @@ export function App() {
     playTone(context, 523.25, 0, 0.2, 0.11);
     playTone(context, 659.25, 0.07, 0.24, 0.1);
     playTone(context, 783.99, 0.14, 0.38, 0.12);
+  }
+  function playEndSound() {
+    const context = getAudioContext();
+    if (!context) return;
+    [
+      [523.25, 0, 0.18, 0.1],
+      [659.25, 0.14, 0.18, 0.1],
+      [783.99, 0.28, 0.2, 0.11],
+      [1046.5, 0.44, 0.58, 0.13],
+      [659.25, 0.48, 0.54, 0.07],
+      [783.99, 0.48, 0.54, 0.07],
+    ].forEach(([frequency, offset, duration, volume]) => playTone(context, frequency, offset, duration, volume));
   }
   return <main className="app">
     <header className="toolbar">
